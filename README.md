@@ -9,8 +9,8 @@ This example contains instructions how users can initiate Inbound Calls.
 
 
 ## Installation
-- `git clone https://github.com/EnableX/voice-api-inbound-ivr.git`
-- `cd voice-api-inbound-ivr`
+- `git clone https://github.com/EnableX/voice-inbound-ivr-dtmf-bridge.git`
+- `cd voice-inbound-ivr-dtmf-bridge`
 - `npm install`
 
 
@@ -93,4 +93,4 @@ For Windows (Using Git Bash):
 
 ## Starting the client application script
 - For Inbound Calls
-  - `node client-inbound-ivr.js`
+  - `node client.js`
