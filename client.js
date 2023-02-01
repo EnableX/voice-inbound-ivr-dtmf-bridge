@@ -32,6 +32,8 @@ const servicePort = process.env.SERVICE_PORT || 3000;
 const redirect_number = process.env.REDIRECT_NUMBER;
 let dtmf_received = false;
 
+const numberArray = process.env.BRIDGETO.split(',');
+
 // Handle error generated while creating / starting an http server
 function onError(error) {
   if (error.syscall !== 'listen') {
@@ -72,7 +74,7 @@ function createNgrokTunnel() {
     (async () => {
       try {
         //webHookUrl = await connect({ proto: 'http', addr: servicePort });
-        webHookUrl = 'http://10.100.1.137:3000';
+        webHookUrl = process.env.PUBLIC_WEBHOOK_URL;
 	console.log('ngrok tunnel set up:', webHookUrl);
       } catch (error) {
         console.log(`Error happened while trying to connect via ngrok ${JSON.stringify(error)}`);
@@ -195,7 +197,7 @@ function  recordingStop(voice_id) {
 
 function recordingStart(voice_id) {
   logger.info(`[${voice_id}] start the recording`);
-  startRecording(voice_id , 'bridgerecording_inbound_03', () => {});
+  startRecording(voice_id , 'bridgerecording_inbound', () => {});
 }
 
 
@@ -246,7 +248,6 @@ function voiceEventHandler(voiceEvent) {
        ivrVoiceCall(voiceEvent.voice_id, ttsPlayVoice, "Please press 1 to talk to sales team  .........  2 to talk to service team ....... 3 to disconnect the call .........................................",true, 'voice_menu', () => {});
     } else if (voiceEvent.playstate === 'menutimeout') {
        console.log ("["+voice_id+"]  menutimeout received");
-       setTimeout(()=>{bridgeCall(voiceEvent.voice_id, '12028528186' , '919972972207', () => {})},1000);
     } else if(voiceEvent.playstate === 'digitcollected' && voiceEvent.prompt_ref === 'voice_menu') {
       console.log ("["+voice_id+"] voice menu digit collected =>  " + voiceEvent.digit);
       const eventMsg = 'Received Digits : ' + voiceEvent.digit;
@@ -258,19 +259,18 @@ function voiceEventHandler(voiceEvent) {
         logger.info(`[${voice_id}] ${eventMsg}`);
         sseMsg.push(eventMsg);
                 ivrVoiceCall(voice_id, ttsPlayVoice, "Your call will be forwarded to Sales Team", 'voice_menu', () => {});
-                setTimeout(()=>{bridgeCall(voice_id, '12028528186' , '919972972207', () => {})},3000);
+                setTimeout(()=>{bridgeCall(voice_id, process.env.FROM , numberArray[voiceEvent.digit], () => {})},3000);
       } else if(voiceEvent.digit === '2') {
                 const eventMsg = 'Received Digits : ' + voiceEvent.digit + ' Your call will be forwarded to Service Team';
         logger.info(`[${call.voice_id}] ${eventMsg}`);
         sseMsg.push(eventMsg);
                 ivrVoiceCall(voice_id, ttsPlayVoice, "Your call will be forwarded to Service Team", 'voice_menu', () => {});
-                setTimeout(()=>{bridgeCall(voice_id, '12028528186' , '919972972207', () => {})},3000);
+                setTimeout(()=>{bridgeCall(voice_id, process.env.FROM  , numberArray[voiceEvent.digit], () => {})},3000);
       } else if(voiceEvent.digit === '3') {
                 const eventMsg = 'Received Digits : ' + voiceEvent.digit + ' Your call will be disconnected';
         logger.info(`[${voice_id}] ${eventMsg}`);
         sseMsg.push(eventMsg);
                 ivrVoiceCall(voice_id, ttsPlayVoice, "Thanks you ! Have a nice day", 'voice_menu', () => {});
-                //setTimeout(()=>{bridgeCall(call.voice_id, '12028528186' , '919972972207', () => {})},2000);
                 setTimeout(timeOutHandler, 4000,voiceEvent.voice_id);
           } else {
         const eventMsg = 'Received Digits : ' + voiceEvent.digit + ' your have entered wrong digits';
@@ -280,8 +280,6 @@ function voiceEventHandler(voiceEvent) {
                 dtmf_received = false;
                 setTimeout(()=>{if(dtmf_received === false) ivrVoiceCall(voice_id, ttsPlayVoice, "Sorry your have entered wrong digits", 'voice_menu', () => {});} , 1000);
           }
-
-
     } else if(voiceEvent.playstate && voiceEvent.playstate === 'initiated') {
       console.log ("["+voice_id+"] Play initiated, [play_id] " + voiceEvent.play_id);
     } else {
