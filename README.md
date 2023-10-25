@@ -1,4 +1,4 @@
-# **Basic Client Examples to demonstrate Inbound Calls , Play IVR collect DTMF and then Bridge the call using Enablex Voice APIs. **
+# Inbound Call Handling with DTMF IVR and Bridging: Using EnableX Programmable Voice APIs
 This example contains instructions how users can initiate Inbound Calls , Play IVR , collect the DTMF digits and bridge the call.
 
 
